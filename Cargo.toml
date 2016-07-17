@@ -1,0 +1,11 @@
+[package]
+name = "wurk"
+version = "0.1.0"
+authors = ["Edd Steel <edward.steel@gmail.com>"]
+
+[dependencies]
+civet = "0.8"
+conduit = "0.7"
+conduit-router = "0.7"
+rscam = "0.5"
+uuid = { version = "0.2", features = ["v4"] }
