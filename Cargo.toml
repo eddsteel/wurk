@@ -8,4 +8,7 @@ civet = "0.8"
 conduit = "0.7"
 conduit-router = "0.7"
 rscam = "0.5"
-uuid = { version = "0.2", features = ["v4"] }
+uuid = { version = "0.2", features = ["v4", "serde"] }
+serde = "*"
+serde_json = "*"
+serde_macros = "*"
