@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Wurk</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Hi</h1>
+    <div id="frame">
+    </div>
+    <div class="controls">
+      <button id="snap">Cleeck</button>
+    </div>
+    <script src="underscore.js"></script>
+    <script src="jquery.js"></script>
+    <script src="main.js"></script>
+    <script>
+      var wurk = new Wurk();
+      $(function() {
+      console.log("oh, hi there.");
+          wurk.inject($("#snap"));
+      });
+    </script>
+  </body>
+</html>

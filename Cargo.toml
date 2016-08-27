@@ -7,6 +7,7 @@ authors = ["Edd Steel <edward.steel@gmail.com>"]
 civet = "0.8"
 conduit = "0.7"
 conduit-router = "0.7"
+conduit-static = "*"
 rscam = "0.5"
 uuid = { version = "0.2", features = ["v4", "serde"] }
 serde = "*"

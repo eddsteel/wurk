@@ -3,6 +3,8 @@ use rscam;
 use std::fs;
 use std::io;
 use std::io::Write;
+use std::thread;
+use std::time::Duration;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PhotoRep {
@@ -53,7 +55,7 @@ fn do_burst() -> Result<PhotoRep, rscam::Error> {
     try!(camera.start(&config()));
 
     let mut vec = Vec::new();
-    for _ in 1..3 {
+    for _ in 1..6 {
         let id = id();
         let filename = filename(&id);
         let frame = camera.capture().map_err(rscam::Error::Io);
@@ -61,6 +63,7 @@ fn do_burst() -> Result<PhotoRep, rscam::Error> {
         try!(frame.and_then(|f| file.write_all(&f[..]).map_err(rscam::Error::Io)));
 
         vec.push(path(&id));
+        thread::sleep(Duration::from_millis(65));
     }
 
     try!(camera.stop().map_err(rscam::Error::Io));
