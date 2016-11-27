@@ -14,7 +14,7 @@ use std::result;
 use std::sync::mpsc::channel;
 
 use civet::{Config, Server};
-use conduit::{Request, Response};
+use conduit::{Request, Response, Method};
 use conduit_router::{RouteBuilder, RequestParams};
 use conduit_static::Static;
 use serde::Serialize;
@@ -96,7 +96,20 @@ fn validate_photo_uuid(s: Option<&str>) -> HttpResult<String> {
 }
 
 fn photo(_req: &mut Request) -> io::Result<Response> {
-    let filepath = validate_photo_uuid(_req.params().find("uuid"));
+    let uuid = _req.params().find("uuid");
+    let filepath = validate_photo_uuid(uuid);
+
+    let cached: Option<bool> = uuid.and_then(|id| {
+        _req.headers().find("If-None-Match").map(|etags| {
+            id == etags[0]
+        })
+    });
+
+    if cached == Some(true) {
+        // TODO: actual empty body
+        return Ok(civet::response(304, HashMap::new(), Cursor::new(vec![])));
+    }
+
     let photo = filepath.and_then(|path| {
         camera::file_from_id(path).map_err(|e| HttpError::InternalServerError(e.to_string()))
     });
@@ -107,8 +120,22 @@ fn photo(_req: &mut Request) -> io::Result<Response> {
         Ok(p) => {
             headers.insert(String::from("Content-Type"),
                            vec![String::from("image/jpeg")]);
+            match uuid {
+                Some(u) => {
+                    headers.insert(String::from("ETag"),
+                                   vec![String::from(u)]);
+                    ()
+                },
+                None => ()
+            };
+
+            if _req.method() == Method::Head {
+                civet::response(200, headers, Cursor::new(vec![]))
+            } else {
+                civet::response(200, headers, Box::new(p))
+            }
+
             // TODO: Content-Size
-            civet::response(200, headers, Box::new(p))
         }
         Err(HttpError::BadRequest(m)) => {
             headers.insert(String::from("Content-Type"),
@@ -129,6 +156,7 @@ fn server_listen(path: &Path) -> () {
     router.get("/host", hostname);
     router.get("/photos", photos);
     router.get("/photos/:uuid", photo);
+    router.head("/photos/:uuid", photo);
     router.get("/*", Static::new(path));
 
     let mut cfg = Config::new();
