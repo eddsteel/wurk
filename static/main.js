@@ -15,13 +15,37 @@ function Wurk() {
             url: "/photos",
             dataType: 'json',
             success: function(result) {
-                _.map(result.photos, console.log);
                 push_frame(result.photos);
-                $(img(result.photos[0], count)).appendTo(target);
+                var photo = $(img(result.photos[0], count));
+                photo.appendTo(target);
+                animate_step(photo, result.photos, count, Date.now());
             }
         });
     }
 
+
+    function animate_step(img, photos, count, then) {
+        var now = Date.now();
+
+        if ((now - then) > 75) {
+            img.attr("src", photos[count]);
+            var new_count;
+            if (count >= photos.length) {
+                new_count = 0;
+            } else {
+                new_count = count + 1;
+            }
+            animate_step(img, photos, new_count, now);
+        } else {
+            requestAnimationFrame(function() { animate_step(img, photos, count, then) });
+        }
+    }
+
+    function animate(counter) {
+        var img = $("#burst-" + counter);
+        var photos = frames[counter];
+        animate_step(img, photos, 0);
+    }
 
 
     this.go = function() {
