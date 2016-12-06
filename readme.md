@@ -1,3 +1,5 @@
-* Maybe useful
-- [rscam](https://github.com/loyd/rscam)
-- [image](https://github.com/PistonDevelopers/image)
+# Messing around with webcams and APIs
+
+Here's my genuine "waiting to compile" face.
+
+![compile face](isthisgoingtowork.jpg)
