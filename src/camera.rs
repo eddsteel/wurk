@@ -50,23 +50,39 @@ pub fn burst() -> Result<PhotoRep, String> {
     do_burst().map_err(rscamerr_to_string)
 }
 
+fn foo() -> Result<PhotoRep, rscam::Error> {
+    let mut camera = try!(rscam::new("/dev/video0"));
+    let id = id();
+    let filename = filename(&id);
+
+    let frame = camera.capture();            // frame: Result<rscam::Frame, io::Error>
+    let file  = fs::File::create(&filename); // file: Result<fs::File, io::Error>
+
+    file.and_then(|mut file| {
+        frame.and_then(|frame| {
+            file.write_all(&frame[..])
+        })
+    });
+}
+
 fn do_burst() -> Result<PhotoRep, rscam::Error> {
-    let mut camera = try!(rscam::new("/dev/video0").map_err(rscam::Error::Io));
+    let mut camera = try!(rscam::new("/dev/video0"));
     try!(camera.start(&config()));
 
     let mut vec = Vec::new();
     for _ in 1..6 {
         let id = id();
         let filename = filename(&id);
-        let frame = camera.capture().map_err(rscam::Error::Io);
-        let mut file = try!(fs::File::create(&filename));
-        try!(frame.and_then(|f| file.write_all(&f[..]).map_err(rscam::Error::Io)));
 
+        let frame = try!(camera.capture());
+        let file = fs::File::create(&filename);
+        try!(file.and_then(|mut f| {
+            f.write_all(&frame[..])
+        }));
         vec.push(path(&id));
         thread::sleep(Duration::from_millis(65));
     }
 
-    try!(camera.stop().map_err(rscam::Error::Io));
-
+    try!(camera.stop());
     Ok(PhotoRep{ photos: vec })
 }
